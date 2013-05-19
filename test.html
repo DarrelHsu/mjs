@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <title>just for test</title>
+    <script src="dest/client.js"></script>
+  </head>
+  <body>
+    <a href="#" id="he"><h1>Camera Test</h1></a>
+    <a href="#" id="location"><h1>Location Test</h1></a>
+    <a href="#" id="recorder"><h1>Recoder Test</h1></a>
+    <a href="#" id="school"><h1>SchoolSelector Test</h1></a>
+    <a href="#" id="corp"><h1>CorpSelector Test</h1></a>
+    <div id="result"></div>
+    <button onclick="location.reload()">reload()</button>
+    <button onclick="alert( typeof M )">typeof M</button>
+   
+   <script>
+      window.onClientReady = function() {
+          M.get("#result").innerHTML = ( typeof M );
+      M.get("#he").onclick = function(){
+        var a = new M.Client.Camera({ 
+	    onerror:function(){ 
+	      alert( arguments[0] )
+	    },
+	    onreadyStateChange:function(){
+            alert( Array.prototype.sort.call( arguments ).join()  )
+	    },
+	    onstart:function(){
+	      alert( arguments[0])
+	    }
+	  })
+      }
+
+      M.get("#location").onclick = function(){
+        var a = new M.Client.Location({ 
+	    onerror:function(){ 
+	      alert( arguments[0] )
+	    },
+        loading:function(){
+            alert( arguments[0] )
+        },
+	    onreadyStateChange:function(){
+	      alert( Array.prototype.slice.call( arguments ).join() )
+	    },
+	    onstart:function(){
+	      alert( arguments[0])
+	    }
+	  })
+      }
+
+      M.get("#recorder").onclick = function(){
+        var a = new M.Client.Recorder({ 
+	    onerror:function(){ 
+	      alert( arguments[0] )
+	    },
+	    onreadyStateChange:function(){
+	      alert( Array.prototype.slice.call( arguments ).join()  )
+	    },
+	    onstart:function(){
+	      alert( arguments[0])
+	    }
+	  })
+      }
+      M.get("#school").onclick = function(){
+        var a = new M.Client.SchoolSelector({ 
+	    onerror:function(){ 
+	      alert( arguments[0] )
+	    },
+	    onreadyStateChange:function(){
+            alert( Array.prototype.sort.call( arguments ).join()  )
+	    },
+
+	    onstart:function(){
+	      alert( arguments[0])
+	    }
+	  })
+      }
+      M.get("#corp").onclick = function(){
+        var a = new M.Client.CorpSelector({ 
+	    onerror:function(){ 
+	      alert( arguments[0] )
+	    },
+	    onreadyStateChange:function(){
+            alert( Array.prototype.sort.call( arguments ).join()  )
+	    },
+	    onstart:function(){
+	      alert( arguments[0])
+	    }
+	  })
+    }
+      }
+    </script>
+  </body>
+</html>

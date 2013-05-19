@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <title>just for test</title>
+    <script src="dest/client.js"></script>
+  </head>
+  <body>
+    <a href="#" id="he"><h1>Camera Test</h1></a>
+    <a href="#" id="recorder"><h1>Recoder Test</h1></a>
+    <a href="#" id="school"><h1>SchoolSelector Test</h1></a>
+    <a href="#" id="corp"><h1>CorpSelector Test</h1></a>
+    <a href="#" id="audio"><h1>AudioPlayer Test</h1></a>
+   <script>
+     M.getEl("#he").toggleClass("test");
+     M.getEl("body").delegate("a","click",function(){
+       console.log( this , 1 )
+       return false
+     });
+    </script>
+  </body>
+</html>
