@@ -155,22 +155,17 @@
     }
   }   
   M.ready = function( fun ){
-    M.domReady = window.clientReady || M.domReady ;
-    if( document.readyState == 'complete' ){
+    if( M.domReady || document.readyState == 'complete' ){
       fun.call( M );
     }else if(fun instanceof Function){
       readyList = readyList || [] ;
       readyList.push( fun );
       if( M.domReady ){
         DOMContentLoaded();
-      }else{
-        DOC = document ;
-        DOC.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
+      }else if( readyList.lengh < 2 ){
+       document.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
 	     window.addEventListener("load", DOMContentLoaded  , false );
       }
     }
   }
-  M.ready(function(){
-    // do nothing
-  });
 }( M ));
