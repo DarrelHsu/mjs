@@ -1,42 +1,18 @@
-/*!
-*
-* mi v 1.0.6
-* By Darrel.Hsu
-* 
-* CopyRight 2011-2012 , web@miliao.com
-* 2012-03-12
-*
-*/
-
 ;;(function(G){
-  M = G.M ||  {} ;
   M.tid = 100;
   
-  M.UA = navigator.userAgent ;
-  M.DOC = document;
+  M.UA = navigator.userAgent.toLowerCase() ;
+  var DOC = document;
   
  
   M.genId = function( pre ){
     pre = pre || 'MID-';
     return pre + "" + this.tid++ ; 
   };
-
-  M.isOpera = !!window.opera ;
- 
-  M.isChrome = !!window.chrome ;
- 
-  M.isMozilla = !!window.netscape; 
-
-  M.isIpad = M.UA.indexOf("iPad") > -1 ; 
-
-  M.isAndroid = M.UA.toLowerCase().indexOf("android") > -1 ;
   
-  M.isIphone = M.UA.toLowerCase().indexOf("iphone") > -1 ;
-
-  M.isUC = M.UA.toLowerCase().indexOf("ucweb") > -1 ;
 
   M.ability = {
-    placeholder:function(){ return 'placeholder' in document.createElement("input"); }(),
+    placeholder:function(){ return 'placeholder' in DOC.createElement("input"); }(),
     flash:function(){
         var plg = navigator.plugins ;
         return plg.length > 0 && function(){
@@ -50,8 +26,14 @@
     }(),
     audioMp3Supported:function(){
       if( typeof HTMLAudioElement === 'function' || typeof HTMLAudioElement === 'object' ){
-        var a = new Audio();
-        return a.canPlayType("audio/mpeg");
+        //Safari for windows 5.1.7 版本发现有可能会出现Audio为undefined
+        //而且window.Audio是存在的，值就是undefined ，具体原因末查明。
+        //在该版本通过 createElement("audio") 也不能正常遍历相关属性。
+        //**!!window.HTMLAudioElement是存在的!!**
+        if( Audio !== undefined ){
+          var a = new Audio();
+          return a.canPlayType("audio/mpeg");
+        }
       }
       return false;
     }(),
@@ -59,20 +41,57 @@
       return !!window.localStorage;
     }(),
     fixedSupport:function(){
-      var div = document.createElement("div") ,
+      var div = DOC.createElement("div") ,
           divstyle = div.style ;
       divstyle.cssText = "position:absolute;position:fixed;"
       return divstyle['position'] == 'fixed';
     }()
   };
 
-  M.isEmptyObject = function( obj ){
-    return ( typeof obj === 'object' ) && function(){
-      for(var p in obj ){}
-      return p === undefined ;
-    }();
-  };
-
+  M.C = function( tag , props ){
+    var el = DOC.createElement( tag || "div" ) ;
+    if( props && typeof props == 'object' ){
+      var hook = {
+        "class" : "className" ,
+        html : "innerHTML" ,
+        "for" : "htmlFor"  in el ? "htmlFor" : "for" ,
+        css : function( el , settings ){
+          if( typeof settings == 'string' ){
+            el.style.cssText = settings ;
+          }else{
+            var cssText =  [] ;
+            var reg = /^[a-z]+([A-Z])[a-z]+/ ;
+            for( var key in settings ){
+              var styleName = key ;
+              if( reg.test(key) ){
+                styleName = key.replace( /([A-Z])/, function( str , upper ){
+                  return "-" + upper.toLowerCase();
+                });
+              }
+              cssText.push( styleName + ":" + settings[key] ) ;
+            }
+            el.style.cssText = cssText.join(";");
+          }
+        }
+      } 
+      for( var key in props ){
+        if( key in hook ){
+          if( typeof hook[key] == "string" ){
+            el[ hook[key] ] = props[ key ];
+          }else{
+            hook[key]( el, props[ key ] )
+          }
+        }else{
+          if( key in el ){
+            el[ key ] = props[ key ];
+          }else{
+            el.setAttribute( key , props[ key ] );
+          }
+        }
+      }
+    }
+    return el ;
+  }
   /*
   * 参数化url
   * author Darrel.Hsu
@@ -91,7 +110,7 @@
     for( var i=0; i<list.length; i++ ){
       var m = list[i];
       m = m.split("\=");
-      o[m[0]] = m.slice(1,m.length).join("=") || "";
+      o[m[0]] = decodeURIComponent( m.slice(1,m.length).join("=") || "" );
     }
     return o ;
   };
@@ -113,6 +132,11 @@
   * 模版
   */
   M.template = function( html , data , reg ){
+    //1.区别老的模版方法 
+    //3.因为不考虑原样返回的问题了，可以定制模版类型。
+    if( !data ){
+      return html ;
+    }
     var reg = reg ||  /\{([\w-]+)\}/g ;
     return html.replace( reg, function( m , name ){
       if( data[name] !== undefined ){
@@ -125,6 +149,8 @@
         return reg.test( ret ) ?  
           M.template( ret , data , reg ) : ret ;                  
       }else{
+        //2.原来的方法中对未处理的模版原样返回，
+	//2.但存在模版死循环的风险
         return "" ;
       }
     });
@@ -207,6 +233,12 @@
         for(var p in arg){
           this[p] = arg[p]
         }
+        if( this.events ){
+          for( var evt in this.events ){
+            this.on( evt , this.events[evt] );
+          }
+          delete this.events;
+        }
         if( 'init' in this && this['init'] instanceof Function ){
           this.init();
         }
@@ -226,93 +258,166 @@
     M.override(  sb , overrides );
     return sb; 
   };
-  
+  /*
+   * M的基础模型，提供基本的事件驱动
+   *
+   */
   M.Object = M.extend( {} ,{
-    /*
-     *
-     *
-     *
-     *
-     *
-     */
-    on:function( e , fun ){
+    on:function( e , fun , must ){
       if( e.indexOf(",") > -1 ){
           var es = e.split(",");
           for(var i=0;i<es.length;i++){
-              this.on( es[i] , fun );
-          }
+              this.on( es[i] , fun , must );
+          }   
       }else{
-        var ev =  ( this.evts = this.evts || {}  )[e];
-        ev = ev || (this.evts[e] = [] );
-        ev.push(fun) ;
-     }
+        /*  
+        * 这里是方便做些状态状态，就不需要调用者自己记录太多的状态
+        * 直接通过第三个参数控制  如果该事件之前发生过则直接执行回调
+        *
+        */
+        var ret = undefined ;
+        if( must ){
+          if( this.eventhistory && e in this.eventhistory ){
+            var ret = fun.call( this ) ; 
+          }   
+        }   
+        if( ret !== false ){  
+        /*  
+         * 承上，如果是一次性的活通过return false不要再继续监听
+         * 如果该事件未触发过则正常监听。
+         *
+         */
+          var ev =  ( this.evts = this.evts || {}  )[e];
+          ev = ev || (this.evts[e] = [] );
+          ev.push(fun) ;
+        }   
+     }   
+     return this ;
     },
-    fire:function(ev){
-      console.log("fire event : " + ev );
+    fire:function( ){
       this.evts = this.evts || {};
+      this.eventhistory = this.eventhistory || {}
       var args = Array.prototype.slice.call( arguments ,0 );
-      args.shift();
-      var  fun = this.evts[ev] ;
-      if( fun instanceof Array ){
-        for(var i=0,p;p=fun[i++];){
-          this.eventTag = ev ;
-          p.apply( this , args );
-        }
+      var ev = args.shift() , scope = this ;
+      if( typeof ev != 'string' ){
+        scope = ev ;
+        ev = args.shift();
       }
-    },
-    hasEvent:function( e ){
-      return  this.evts && ( e in this.evts ) ;
+      var evm = "on" + ev
+      if( evm in this && typeof this[evm] == 'function'){
+        this[evm].apply( scope , args );
+      }  
+      var fun = this.evts[ev] ;
+      if( fun instanceof Array ){
+        for(var i=0 ; i < fun.length ; i++ ){
+          this.eventTag = ev ;
+          var p = fun[i];
+          var flag = p.apply( scope , args );
+          if( flag === false ){
+            fun.splice( i , 1 );
+            i-- ;
+          }
+        }
+      };
+      this.eventhistory[ ev ] = 1 ;
+      return this;
     },
     un:function(e  ,fun){
       this.evts = this.evts || {};
-      var ev = this.evts[e];
-      if( ev ){
-        if( !!fun ){
-          for(var i =0 , p ; p = ev[i++] ; ){
-            if( fun === p ){
-              ev.splice( i-1 ,1 );
-              i-- ;
+      if( e === undefined ){
+        this.evts = {};
+        return this ;
+      }else{
+        var ev = this.evts[e];
+        if( ev ){
+          if( !!fun ){
+            for(var i =0 , p ; p = ev[i++] ; ){
+              if( fun === p ){
+                ev.splice( i-1 ,1 );
+                i-- ;
+              }
             }
+          }else{
+             this.evts[e] = null ;
           }
-        }else{
-           this.evts[e] = null ;
         }
+        return this;
       }
     }
   });
-  
-  M.merge = function( o , p ){
-    for(var attr in p ){
-      o[ attr ] = p[ attr ];
-    }
-    return o ;
-  } ;
-  Date.prototype.toSimpleString = function (){
-    var h = this.getHours();var m = this.getMinutes();var mm = this.getMonth()+1;var dd= this.getDate();
-    return mm+'-'+dd +' '+(h>9 ? '' :'0') + h + ':' + (m>9 ? '' :'0') + m;
-  }
 
-  M.applyIf = M.applyIf || function ( o, p ){
-    if(arguments[2]){
-      for(var i=2;i<arguments.length;i++){
-        M.applyIf(o,arguments[i])
+  M.getScript = function( url , callback ){
+    var o = document.createElement("script")
+    o.src = url;
+    var head  = document.getElementsByTagName("head")[0];
+    if( !!o.attachEvent ){
+      o.onreadystatechange =  function(){
+        var st = o.readyState ;
+        if( st == 'loaded' || st == 'complete' ){
+          if( !!callback ){ callback(); }
+          o.onreadystatechange =  null ;
+          head.removeChild( o );
+        }
+      };
+    }else{
+      o.onload = o.onerror = function(){
+        if( !!callback ){ callback(); } 
+        o.onload = o.onerror = null ;
+        head.removeChild( o );
       }
     }
-    if(o && p && typeof p == 'object'){
-      for(var c in p){
-        if(o.hasOwnProperty(c)){
-          o[c]=p[c]
+    head.appendChild( o )
+  } 
+
+  M.ProxyModel = M.extend( M.Object , {
+    EventProxy:new M.Object() ,
+    //如果子类不想与父类共享同一个proxy一定要覆盖掉
+    onET:function( ev , fn ){
+      this.EventProxy.on( ev , fn )
+      M.Object.prototype.on.call( this, ev , fn );
+    },
+    fireET:function(){
+      var ep = this.EventProxy;
+      var args = [].slice.call( arguments , 0 );
+      args.unshift( this )
+      ep.fire.apply( ep , args );
+      args.shift();
+      M.Object.prototype.fire.apply( this , args );
+    }
+  }) ;
+  M.merge = function( o , p , q ){
+    if( p instanceof Array ){
+      for( var i = 0 ;i<p.length;i++){
+        var value = p[i] ;
+        if( typeof value == 'object'  ){
+          o[i] = value instanceof Array ? [] : {} ;
+          M.merge( o[i] , value );
+        }else{
+          o[i] = value ;
         }
       }
-    }
-  };
-  M.applyIfNot = function( o , org , keep){
-    var Key =" \u2001"
-    keep = Key + ( keep || [] ).join( Key ) + Key ;
-    for( var p in org ){
-      if( !( p in o ) &&  keep.indexOf( Key + p + Key ) <= -1 ){
-        o[ p ] = org[p];
+    }else if( typeof p == 'object' ){
+      for( var key in p ){
+        var value = p[key] ;
+        if( typeof value == 'object'  ){
+          o[key] = value instanceof Array ? [] : {} ;
+          M.merge( o[key] , value );
+        }else{
+          o[key] = value ;
+        } 
       }
     }
-  };
+    /*for(var attr in p ){
+      o[ attr ] = p[ attr ];
+    }
+    if( q ){
+      return M.merge( o , q );
+    }else{
+      return o ;
+    }*/
+  } ;
+//M.encode = M.Util.encodeJSON;
+/* 
+ * String 
+ */
 }(window));

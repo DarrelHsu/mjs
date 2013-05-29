@@ -1,4 +1,25 @@
-;
+/*!
+ * M.js Javascript Library v1.0
+ * https://github.com/DarrelHsu/mjs
+ * Copyright 2010-2012 Darrel Hsu
+ *
+ * Licenses 
+ * 
+ *         DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+ *   
+ * Everyone is permitted to copy and distribute verbatim or modified
+ * copies of this license document, and changing it is allowed as long
+ * as the name is changed.
+ *
+ *         DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+ * TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+ *
+ *     0. You just DO WHAT THE FUCK YOU WANT TO.
+ *         
+ *                         去他妈的授权
+ *  源代码你拿过去爱干麻干麻，我不对代码的任何安全性、用途以及BUG负责，
+ *  源代码修改时我也没有义务通知你，凡事自己搞定。
+ */
 /*
  * 1.0.3
  * 修复tap事件有可能与touch的重合问题
@@ -65,5 +86,8 @@
  * 增加delegate与undelegate方法 
  * 优化El的parents方法
  * 优先Els的getAt方法
+ * 1.0.13.529
+ * 增加对浏览器的判断
+ * 删除掉了一些不用的东西
  */
-M.version = '1.0.11.8';
+M.version = '1.0.13.529';

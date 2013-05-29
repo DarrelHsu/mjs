@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="test" basedir=".">
+<project name="mjs" basedir=".">
     <target name="mjs">
-    <concat destfile="${basedir}/dest/client.js" encoding="utf-8" append="false">
-                <path path="${basedir}/application.js" />
+    <concat destfile="${basedir}/m.js" encoding="utf-8" append="false">
                 <path path="${basedir}/version.js" /> 
+                <path path="${basedir}/application.js" />
+                <path path="${basedir}/browser/base.js" />
                 <path path="${basedir}/util/util.js" />
                 <path path="${basedir}/dom/M.ElementEvent.js" />
                 <path path="${basedir}/dom/M.Element.js" />
                 <path path="${basedir}/net/ajax.js" />
                 <path path="${basedir}/net/jsonp.js" />
-                <path path="${basedir}/cache/M.CacheManager.js" />
+                <!--path path="${basedir}/cache/M.CacheManager.js" />
                 <path path="${basedir}/client/clientInstande.js" />
                 <path path="${basedir}/client/M.Client.Model.js" />
                 <path path="${basedir}/client/M.Client.Recorder.js" />
@@ -17,7 +18,7 @@
                 <path path="${basedir}/client/M.Client.Selector.js" />
                 <path path="${basedir}/client/M.Client.Player.js" />
                 <path path="${basedir}/client/M.Client.Net.js"/>
-                <path path="${basedir}/client/clientReady.js" />
+                <path path="${basedir}/client/clientReady.js" /!-->
         </concat>
     </target>
 

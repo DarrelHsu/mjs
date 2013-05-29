@@ -448,7 +448,11 @@
     },
     set:function( attrName , val  ){
       this.each(function(){
-        this.setAttribute( attrName , val ) ;
+        if( attrName in this ){
+          this[attrName] = val 
+        }else{
+          this.setAttribute( attrName , val ) ;
+        }
       });
       return this;
     },
