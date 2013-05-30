@@ -41,75 +41,80 @@ M = {
        divstyle.cssText = "position:absolute;position:fixed;"
        return divstyle['position'] == 'fixed';
      }()
-  }
-};
-}());
-M.C = function( tag , props ){
-  var el = document.createElement( tag || "div" ) ;
-  if( props && typeof props == 'object' ){
-    var hook = {
-      "class" : "className" ,
-      html : "innerHTML" ,
-      "for" : "htmlFor"  in el ? "htmlFor" : "for" ,
-      css : function( el , settings ){
-        if( typeof settings == 'string' ){
-          el.style.cssText = settings ;
-        }else{
-          var cssText =  [] ;
-          var reg = /^[a-z]+([A-Z])[a-z]+/ ;
-          for( var key in settings ){
-            var styleName = key ;
-            if( reg.test(key) ){
-              styleName = key.replace( /([A-Z])/, function( str , upper ){
-                return "-" + upper.toLowerCase();
-              });
+  } ,
+  /*
+   *C方法创建一个自定的标签
+   * M.C("div",{ html:'fuck'})
+   */
+  C : function( tag , props ){
+    var el = document.createElement( tag || "div" ) ;
+    if( props && typeof props == 'object' ){
+      var hook = {
+        "class" : "className" ,
+        html : "innerHTML" ,
+        "for" : "htmlFor"  in el ? "htmlFor" : "for" ,
+        css : function( el , settings ){
+          if( typeof settings == 'string' ){
+            el.style.cssText = settings ;
+          }else{
+            var cssText =  [] ;
+            var reg = /^[a-z]+([A-Z])[a-z]+/ ;
+            for( var key in settings ){
+              var styleName = key ;
+              if( reg.test(key) ){
+                styleName = key.replace( /([A-Z])/, function( str , upper ){
+                  return "-" + upper.toLowerCase();
+                });
+              }
+              cssText.push( styleName + ":" + settings[key] ) ;
             }
-            cssText.push( styleName + ":" + settings[key] ) ;
+            el.style.cssText = cssText.join(";");
           }
-          el.style.cssText = cssText.join(";");
         }
-      }
-    } 
-    for( var key in props ){
-      if( key in hook ){
-        if( typeof hook[key] == "string" ){
-          el[ hook[key] ] = props[ key ];
+      } 
+      for( var key in props ){
+        if( key in hook ){
+          if( typeof hook[key] == "string" ){
+            el[ hook[key] ] = props[ key ];
+          }else{
+            hook[key]( el, props[ key ] )
+          }
         }else{
-          hook[key]( el, props[ key ] )
-        }
-      }else{
-        if( key in el ){
-          el[ key ] = props[ key ];
-        }else{
-          el.setAttribute( key , props[ key ] );
+          if( key in el ){
+            el[ key ] = props[ key ];
+          }else{
+            el.setAttribute( key , props[ key ] );
+          }
         }
       }
     }
+    return el ;
+  },
+  params : function( u ){
+    /*
+    * 参数化url
+    * author Darrel.Hsu
+    */
+    u = u || location.search;
+    /*
+    * 如果u为undefined则使用location.search
+    * 如果两个都没有，就返返回一个false
+    */
+    if( !u ){ return false; }
+    var p = u.split("\?");
+    var o = {};
+    p = p.length ==2 ? p[1] : p[0];
+    var list = p.split("\&");
+    for( var i=0; i<list.length; i++ ){
+      var m = list[i];
+      m = m.split("\=");
+      o[m[0]] = decodeURIComponent( m.slice(1,m.length).join("=") || "" );
+    }
+    return o ;
   }
-  return el ;
-}
-/*
-* 参数化url
-* author Darrel.Hsu
-*/
-M.params = function( u ){
-  u = u || location.search;
-  /*
-  * 如果u为undefined则使用location.search
-  * 如果两个都没有，就返返回一个false
-  */
-  if( !u ){ return false; }
-  var p = u.split("\?");
-  var o = {};
-  p = p.length ==2 ? p[1] : p[0];
-  var list = p.split("\&");
-  for( var i=0; i<list.length; i++ ){
-    var m = list[i];
-    m = m.split("\=");
-    o[m[0]] = decodeURIComponent( m.slice(1,m.length).join("=") || "" );
-  }
-  return o ;
+
 };
+}());
 
 M.decodeParams = function ( para ){
   if( typeof para !== 'object' ){
@@ -381,11 +386,15 @@ M.ProxyModel = M.extend( M.Object , {
     M.Object.prototype.fire.apply( this , args );
   }
 }) ;
+/*
+ * Merge默认是深Copy通过第三个参数可以变成潜Copy
+ * @version : 1.0.13.530
+ */
 M.merge = function( o , p , q ){
   if( p instanceof Array ){
     for( var i = 0 ;i<p.length;i++){
       var value = p[i] ;
-      if( typeof value == 'object'  ){
+      if( !q && typeof value == 'object'  ){
         o[i] = value instanceof Array ? [] : {} ;
         M.merge( o[i] , value );
       }else{
@@ -395,7 +404,7 @@ M.merge = function( o , p , q ){
   }else if( typeof p == 'object' ){
     for( var key in p ){
       var value = p[key] ;
-      if( typeof value == 'object'  ){
+      if( !q && typeof value == 'object'  ){
         o[key] = value instanceof Array ? [] : {} ;
         M.merge( o[key] , value );
       }else{
