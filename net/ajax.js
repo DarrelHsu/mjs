@@ -130,8 +130,8 @@ M.Net.ajax = function(){
      */
     dataType:'',
     /**
-           * @cfg {String} method GET 或者 POST,默认GET.
-           */
+    * @cfg {String} method GET 或者 POST,默认GET.
+    */
     method:'POST',
     /**
      * @cfg {String} url 请求URL
@@ -208,31 +208,4 @@ M.Net.ajax = function(){
   };
   return ajax;
 }();
-  
-  var ajaxTimer = {} ;
-  M.Net.ajax.ajaxStart(function( id ){
-    var top = document.body.scrollTop + 10 ;
-    var mask = new M.Element('div',{
-      id:'ajax-' + id,
-      html:'',
-      style:'-webkit-border-radius:30px;padding:5px;width:120px;position:absolute;z-index:999;right:10px;top:'+ top +'px;height:30px;line-height:30px;background:#F00;color:#FFF;text-align:center;opacity: 0.4;'
-    }).appendTo("body");
-    var showRequest = function(){
-      if( id in ajaxTimer && !!mask.dom ){
-         var html = mask.html();
-	 if( html.length >= 10 ){
-	   html = "-";
-	 }else{
-	   html += "-";
-	 }
-	 mask.html( html );
-	 ajaxTimer[id] = setTimeout( showRequest , 200 );
-      }
-    }
-    ajaxTimer[id] = setTimeout( showRequest , 500 );
-  });
-  M.Net.ajax.ajaxDone(function( id ){
-    window.clearTimeout( ajaxTimer[id] );
-    M.getEl("#ajax-" + id).remove();
-  });
 }());
