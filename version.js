@@ -94,6 +94,7 @@
  * ajax去掉默认ui的显示
  * 1.0.13.603
  * M.Object增加setProperty和set方法
+ * util中删除不要的代码
  */
 (function(){
 var VERSION =  '1.0.13.603'   ;

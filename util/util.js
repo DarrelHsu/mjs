@@ -1,16 +1,4 @@
 ( function() {
-    var _ = window._ ||
-    function(en, chn) {
-      try {
-        //通过url判断是否是英文版本
-        if (location.href.split('?')[1].split('#')[0].indexOf('en') > -1) {
-          return en;
-        }
-      } catch(ex) {
-
-      }
-      return chn;
-    }
 
     var dateFormat = function() {
       var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g, timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g, timezoneClip = /[^-+\dA-Z]/g, pad = function(val, len) {
