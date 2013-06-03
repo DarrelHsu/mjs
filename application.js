@@ -344,6 +344,20 @@ M.Object = M.extend( {} ,{
       }
       return this;
     }
+  },
+  set:function( props ){
+    for( var key in props ){
+      var val = props[key];
+      if( key.indexOf("on") == 0 && typeof val == 'function' ){
+        key = key.replace(/^on/,"");
+        this.on( key , val )
+      }else{
+        this.key = val ;
+      }
+    }
+  },
+  setProperty : function( key , value ){
+    this.key = value ;
   }
 });
 
