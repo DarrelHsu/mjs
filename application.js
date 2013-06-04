@@ -111,158 +111,193 @@ M = {
       o[m[0]] = decodeURIComponent( m.slice(1,m.length).join("=") || "" );
     }
     return o ;
-  }
-
-};
-}());
-
-M.decodeParams = function ( para ){
-  if( typeof para !== 'object' ){
-    return para;
-  }else{
-    var html = [];
-    for(var p in para ){
-      html.push( p + "=" + encodeURIComponent( para[p]) );
-    }
-    return html.join("&");
-  }
-}
-/*
-* @author darrel
-* @params [html:String,data:JSON ]
-* 模版
-*/
-M.template = function( html , data , reg ){
-  //1.区别老的模版方法 
-  //3.因为不考虑原样返回的问题了，可以定制模版类型。
-  if( !data ){
-    return html ;
-  }
-  var reg = reg ||  /\{([\w-]+)\}/g ;
-  return html.replace( reg, function( m , name ){
-    if( data[name] !== undefined ){
-      var ret ;
-      if(data[name] instanceof Function){
-        ret =  data[name].call(data);
-      }else{
-        ret =  data[name];
-      }
-      return reg.test( ret ) ?  
-        M.template( ret , data , reg ) : ret ;                  
+  },
+  /*
+  * @author darrel
+  * @params [html:String,data:JSON ]
+  * 模版
+  */
+  decodeParams : function ( para ){
+    if( typeof para !== 'object' ){
+      return para;
     }else{
-      //2.原来的方法中对未处理的模版原样返回，
-//2.但存在模版死循环的风险
-      return "" ;
+      var html = [];
+      for(var p in para ){
+        html.push( p + "=" + encodeURIComponent( para[p]) );
+      }
+      return html.join("&");
     }
-  });
-};
-/*
-*@author darrel
-*@params [url:URL]
-* 返回当前url或设置转跳 
-*/
-M.locate = function( url ){
-  if(!!!url){
-    return window.location.href;
-  }else{
-    window.location.href = url;
-  }
-};
-/*
-*类方法重载
-*如果想针对某类进行扩展方法或重载可以用这个方法
-* eg.
-* <code>
-*   M.override( M.Object , {
-*     test:function(){
-*       // to do
-*     }
-*   })
-* </code>
-* 这样M.Object就有了test方法
-*/
-M.override = function( origclass , overrides ){
-  if( overrides ){
-    //$.extend( origclass.prototype , overrides )
-    for(var p in overrides){
-       origclass.prototype[p] = overrides[p];
- //把方法或属性写入原型链之中
- //如果原型链中已经有这个属性或方法则会覆盖，
- //否则就是新增
+  },
+  /*
+  *@author darrel
+  *@params [url:URL]
+  * 返回当前url或设置转跳 
+  */
+  template :  function( html , data , reg ){
+    //1.区别老的模版方法 
+    //3.因为不考虑原样返回的问题了，可以定制模版类型。
+    if( !data ){
+      return html ;
     }
-  }
+    var reg = reg ||  /\{([\w-]+)\}/g ;
+    return html.replace( reg, function( m , name ){
+      if( data[name] !== undefined ){
+        var ret ;
+        if(data[name] instanceof Function){
+          ret =  data[name].call(data);
+        }else{
+          ret =  data[name];
+        }
+        return reg.test( ret ) ?  
+          M.template( ret , data , reg ) : ret ;                  
+      }else{
+        //2.原来的方法中对未处理的模版原样返回，
+        //2.但存在模版死循环的风险
+        return "" ;
+      }
+    });
+  },
+  /*
+  *类方法重载
+  *如果想针对某类进行扩展方法或重载可以用这个方法
+  * eg.
+  * <code>
+  *   M.override( M.Object , {
+  *     test:function(){
+  *       // to do
+  *     }
+  *   })
+  * </code>
+  * 这样M.Object就有了test方法
+  */
+  override : function( origclass , overrides ){
+    if( overrides ){
+      //$.extend( origclass.prototype , overrides )
+      for(var p in overrides){
+        origclass.prototype[p] = overrides[p];
+        //把方法或属性写入原型链之中
+        //如果原型链中已经有这个属性或方法则会覆盖，
+        //否则就是新增
+      }
+    }
+  },
+  extend : function( superclass , subclass ){
+    var F = function(){ } , 
+      sb  = subclass ,
+      sbp ,
+      overrides = sb ,
+      spp = superclass.prototype ;
+    var oc = Object.prototype.constructor;
+    /*if( typeof subclass == 'object'){
+      /*
+      * 如果subclass没有构造函数（typeof {} == 'object' ,
+      * typeof function(){} == 'function'）
+      * 需要给 sublcass指定一个构造。
+      * 如果父类存在且有构造，就直接使用父类的将构造
+      * 否则就使用黙认的构造（这个构造以认为传入
+      * 的数参为一个或多个Object，然后依次将Object的属性
+      * 拷呗到subclass中来）
+      * 
+      *
+      sb  =  superclass.constructor == oc ? 
+          subclass.constructor : 
+          function( ){ 
+            //for( var i=0; i<arguments.length; i++ ){
+              var p = arguments[0];
+              //$.extend( this, p );
+              for(var pt in p){
+                this[pt] = p[pt];
+              }
+              if( 'init' in this && this['init'] instanceof Function){
+                this.init();
+              }
+            //}
+          };
+    /*}*/
+    sb = sb.constructor !== oc ?
+      sb.constructor :
+      function(){
+        var arg = arguments[0];
+        for(var p in arg){
+          this[p] = arg[p]
+        }
+        if( this.events ){
+          for( var evt in this.events ){
+            this.on( evt , this.events[evt] );
+          }
+          delete this.events;
+        }
+        if( 'init' in this && this['init'] instanceof Function ){
+          this.init();
+        }
+      };
+    F.prototype = spp; /* 把父类的prototype传过来 */
+    sbp = sb.prototype = new F(); /* sbp -- subclass.prototype 通过new F()形成原型链*/
+    sbp.constructor = sb ;/*重置构造引用，防止 instanceof 链接断开*/
+    /*if( spp.constructor == oc ){
+      spp.constructor = superclass ;
+    }*/
+    sbp.override = function( o ){
+      M.override( sb , o );
+    }
+    sb.extend = function( o ){
+      return M.extend( sb , o );
+    } /*扩展子类，为其增加extend方法方便扩展*/
+    M.override(  sb , overrides );
+    return sb; 
+  },
+  /*
+  * Merge默认是深Copy通过第三个参数可以变成潜Copy
+  * @version : 1.0.13.530
+  */
+  merge : function( o , p , q ){
+    if( p instanceof Array ){
+      for( var i = 0 ;i<p.length;i++){
+        var value = p[i] ;
+        if( !q && typeof value == 'object'  ){
+          o[i] = value instanceof Array ? [] : {} ;
+          M.merge( o[i] , value );
+        }else{
+          o[i] = value ;
+        }
+      }
+    }else if( typeof p == 'object' ){
+      for( var key in p ){
+        var value = p[key] ;
+        if( !q && typeof value == 'object'  ){
+          o[key] = value instanceof Array ? [] : {} ;
+          M.merge( o[key] , value );
+        }else{
+          o[key] = value ;
+        } 
+      }
+    }
+  },
+  getScript : function( url , callback ){
+    var o = document.createElement("script")
+    o.src = url;
+    var head  = document.getElementsByTagName("head")[0];
+    if( !!o.attachEvent ){
+      o.onreadystatechange =  function(){
+        var st = o.readyState ;
+        if( st == 'loaded' || st == 'complete' ){
+          if( !!callback ){ callback(); }
+          o.onreadystatechange =  null ;
+          head.removeChild( o );
+        }
+      };
+    }else{
+      o.onload = o.onerror = function(){
+        if( !!callback ){ callback(); } 
+        o.onload = o.onerror = null ;
+        head.removeChild( o );
+      }
+    }
+    head.appendChild( o )
+  } 
+
 };
 
-//类的继承方法
-M.extend = function( superclass , subclass ){
-  var F = function(){ } , 
-    sb  = subclass ,
-    sbp ,
-    overrides = sb ,
-    spp = superclass.prototype ;
-  var oc = Object.prototype.constructor;
-  /*if( typeof subclass == 'object'){
-    /*
-    * 如果subclass没有构造函数（typeof {} == 'object' ,
-    * typeof function(){} == 'function'）
-    * 需要给 sublcass指定一个构造。
-    * 如果父类存在且有构造，就直接使用父类的将构造
-    * 否则就使用黙认的构造（这个构造以认为传入
-    * 的数参为一个或多个Object，然后依次将Object的属性
-    * 拷呗到subclass中来）
-    * 
-    *
-    sb  =  superclass.constructor == oc ? 
-        subclass.constructor : 
-        function( ){ 
-          //for( var i=0; i<arguments.length; i++ ){
-            var p = arguments[0];
-            //$.extend( this, p );
-            for(var pt in p){
-              this[pt] = p[pt];
-            }
-            if( 'init' in this && this['init'] instanceof Function){
-              this.init();
-            }
-          //}
-        };
-  /*}*/
-  sb = sb.constructor !== oc ?
-    sb.constructor :
-    function(){
-      var arg = arguments[0];
-      for(var p in arg){
-        this[p] = arg[p]
-      }
-      if( this.events ){
-        for( var evt in this.events ){
-          this.on( evt , this.events[evt] );
-        }
-        delete this.events;
-      }
-      if( 'init' in this && this['init'] instanceof Function ){
-        this.init();
-      }
-    };
-  F.prototype = spp; /* 把父类的prototype传过来 */
-  sbp = sb.prototype = new F(); /* sbp -- subclass.prototype 通过new F()形成原型链*/
-  sbp.constructor = sb ;/*重置构造引用，防止 instanceof 链接断开*/
-  /*if( spp.constructor == oc ){
-    spp.constructor = superclass ;
-  }*/
-  sbp.override = function( o ){
-    M.override( sb , o );
-  }
-  sb.extend = function( o ){
-    return M.extend( sb , o );
-  } /*扩展子类，为其增加extend方法方便扩展*/
-  M.override(  sb , overrides );
-  return sb; 
-};
-/*
- * M的基础模型，提供基本的事件驱动
- *
- */
 M.Object = M.extend( {} ,{
   on:function( e , fun , must ){
     if( e.indexOf(",") > -1 ){
@@ -361,69 +396,4 @@ M.Object = M.extend( {} ,{
   }
 });
 
-M.getScript = function( url , callback ){
-  var o = document.createElement("script")
-  o.src = url;
-  var head  = document.getElementsByTagName("head")[0];
-  if( !!o.attachEvent ){
-    o.onreadystatechange =  function(){
-      var st = o.readyState ;
-      if( st == 'loaded' || st == 'complete' ){
-        if( !!callback ){ callback(); }
-        o.onreadystatechange =  null ;
-        head.removeChild( o );
-      }
-    };
-  }else{
-    o.onload = o.onerror = function(){
-      if( !!callback ){ callback(); } 
-      o.onload = o.onerror = null ;
-      head.removeChild( o );
-    }
-  }
-  head.appendChild( o )
-} 
-
-M.ProxyModel = M.extend( M.Object , {
-  EventProxy:new M.Object() ,
-  //如果子类不想与父类共享同一个proxy一定要覆盖掉
-  onET:function( ev , fn ){
-    this.EventProxy.on( ev , fn )
-    M.Object.prototype.on.call( this, ev , fn );
-  },
-  fireET:function(){
-    var ep = this.EventProxy;
-    var args = [].slice.call( arguments , 0 );
-    args.unshift( this )
-    ep.fire.apply( ep , args );
-    args.shift();
-    M.Object.prototype.fire.apply( this , args );
-  }
-}) ;
-/*
- * Merge默认是深Copy通过第三个参数可以变成潜Copy
- * @version : 1.0.13.530
- */
-M.merge = function( o , p , q ){
-  if( p instanceof Array ){
-    for( var i = 0 ;i<p.length;i++){
-      var value = p[i] ;
-      if( !q && typeof value == 'object'  ){
-        o[i] = value instanceof Array ? [] : {} ;
-        M.merge( o[i] , value );
-      }else{
-        o[i] = value ;
-      }
-    }
-  }else if( typeof p == 'object' ){
-    for( var key in p ){
-      var value = p[key] ;
-      if( !q && typeof value == 'object'  ){
-        o[key] = value instanceof Array ? [] : {} ;
-        M.merge( o[key] , value );
-      }else{
-        o[key] = value ;
-      } 
-    }
-  }
-} ;
+}());
