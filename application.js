@@ -273,9 +273,17 @@ M = {
       }
     }
   },
-  getScript : function( url , callback ){
+  getScript : function( url , callback , config ){
+    var DOC , config = config || {};
+    if( "win" in config ){
+      DOC = config['win'].document ;
+      delete config['win'];
+    }
     var o = document.createElement("script")
     o.src = url;
+    for( var key in config ){
+      o.setAttribute( key , config[key] );
+    }
     var head  = document.getElementsByTagName("head")[0];
     if( !!o.attachEvent ){
       o.onreadystatechange =  function(){
