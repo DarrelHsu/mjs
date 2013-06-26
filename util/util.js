@@ -252,14 +252,16 @@
     Ap.getAt = function(index) {
       return this[index];
     };
-    Ap.each = function(fun) {
-      for (var i = 0; i < this.length; i++) {
-        var result = fun.call(this, this[i] , i );
-        if (result === false) {
-          return i;
+    if( !Ap.each ){
+      Ap.each = function(fun) {
+        for (var i = 0; i < this.length; i++) {
+          var result = fun.call(this, this[i] , i );
+          if (result === false) {
+            return i;
+          }
         }
-      }
-    };
+      };
+    }
     if (!('indexOf' in Ap )) {
       Ap.indexOf = function(element, i) {
         for ( i = i || 0; i < this.length; ++i) {

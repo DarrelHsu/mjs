@@ -9,6 +9,11 @@
     return new M.Element( selector , context ) ; 
   }
 
+  var EventHashManager = M.extend( M.Object , {
+    hasEvent : function( evt ){
+      return  this.evts && evt in this.evts  ;
+    }
+  });
   var  DomEventManager = {} ,
        KEY = 1 ; //防止同时产生多个mjs标识的时候重复
   function initEvtMgr( element ){
@@ -22,7 +27,7 @@
     }else{
       var mgr =  new M.ElementEvent( element  );
       mgr.delegate = {} ;
-      mgr.EventHashManager = new M.Object() ;
+      mgr.EventHashManager = new EventHashManager;
       mgr.delegate = {} ;
       return DomEventManager[ mhid ] =  mgr  ;
     }
@@ -109,7 +114,7 @@
           }else if( context == undefined ){
             context = [document] ;
           }else{
-            context = context instanceof NodeList || context instanceof Array ? context : [context];
+            context = context instanceof NodeList || context instanceof Array || context instanceof M.Element ? context : [context];
           }   
           for( var i=0; i<context.length ; i++ ){
             doc = context[i] ?  context[i]  : document ;
@@ -126,7 +131,7 @@
         }
       }
     }
-    if( !!context && !( context instanceof Array ) && !( context instanceof NodeList ) ){ this.attrs( context ) }
+    if( !!context && !( context instanceof Array ) && !( context instanceof NodeList ) && !(  context instanceof M.Element )){ this.attrs( context ) }
    /* var mhid = this.attr("mjs");
     if( null == mhid || mhid.length < 1 ){
       mhid = new Date().getTime() + "" + KEY++  
@@ -302,9 +307,7 @@
             var flag = true ;
             if( M$(me).contains( node ) && match.call( node , sel ) ){
               delegate[sel].each(function(  fun , index ){
-                console.log("delegate: " + sel )
                 if( fun.call(  node , e ) === false ){
-                  console.log("FALSE")
                   e.preventDefault();
                   e.stopPropagation();
                   flag = false ;
@@ -513,6 +516,38 @@
       });
       return this;
     },
+    
+    getScroll : function( d ){
+      if( d === undefined ){ d = 'top'}
+      if( this.length > 0 ){
+        return d == 'top' ? this[0].scrollTop : this[0].scrollLeft
+      }
+    },
+
+    setScroll : function( config ){
+      if( typeof config == 'object' ){
+        if( 'top' in config ){
+          this.attr( 'scrollTop' , config.top ) ;
+        }
+        if( 'left' in config ){
+          this.attr( 'scrollLeft' , config.left ) ;
+        }
+      }else{
+        this.attr( 'scrollTop' , config ) ;
+      }
+      return this ;
+    },
+
+    getHeight : function(){
+      if( this.length > 0 ){
+        return this[0].clientHeight ;
+      }
+    },
+
+    setHeight : function( h ){
+      this.attr("clientHeight" , h );
+      return this ;
+    },
 
     removeClass:function( cls ){
       var me = this ;
@@ -589,7 +624,9 @@
       }
     },    
     get:function( index ){
-      return index instanceof Number && index < this.length ? this[index] : null ; 
+      if( typeof index == 'number' ){
+        return index < this.length ? this[index] : null ; 
+      }
     },
     //只接受字符串或Element
     insertBefore:function( el ){
