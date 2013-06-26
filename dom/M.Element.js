@@ -100,8 +100,8 @@
           this.setel( document.createElement("div").childNodes );
         }
       }else{
-        if( M.isWindow( context ) ){
-          this.setel( [ context ] )
+        if( M.isWindow( selector ) ){
+          this.setel( [ selector ] )
         }else{
           var els = []  , doc ;
           if( typeof context == "string" ){

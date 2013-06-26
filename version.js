@@ -95,6 +95,9 @@
  * 1.0.13.603
  * M.Object增加setProperty和set方法
  * util中删除不要的代码
+ * 1.0.13.626
+ * Array.each调整参数第一个为元素
+ * 修复M.getEl不能选择window的问题
  */
 (function(){
 var VERSION =  '1.0.13.603'   ;

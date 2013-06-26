@@ -254,7 +254,7 @@
     };
     Ap.each = function(fun) {
       for (var i = 0; i < this.length; i++) {
-        var result = fun.call(this, i, this[i]);
+        var result = fun.call(this, this[i] , i );
         if (result === false) {
           return i;
         }
