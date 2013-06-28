@@ -35,17 +35,40 @@
 
     on:function(e,fun){
       var me = this;
-      //me.EvtHash[e] = function( e ){ return fun.call(me ,e );} ;
       //me.dom.addEventListener(e, me.EvtHash[ e ],false);
-      me.dom.addEventListener(e, fun ,false);
+      var dom = me.dom ;
+      if( dom.addEventListener ){
+        me.dom.addEventListener(e, fun ,false);
+      }else{
+        var fn =  function( e ){ return fun.call(me ,e );} ;
+        me.EventHash[ e ]= me.EventHash[ e ] || { org: [] , fn : [] };
+        me.EventHash[ e ].org.push( fun );
+        me.EventHash[ e ].fn.push( fun );
+        me.dom.attachEvent( "on" + e , fn );
+      }
       return me;
     },
 
     un:function(e,fun){
-      /*if( fun === undefined ){
-        fun = this.EvtHash[ e ];
-      }*/
-      this.dom.removeEventListener( e , fun , false );
+      var me = this ;
+      var dom = this.dom ;
+      if( dom.addEventListener ){
+        this.dom.removeEventListener( e , fun , false );
+      }else{
+        var vs = me.EventHash[ e ] ;
+        var fn ;
+        if( vs ){
+          for( var i = 0 ; i < vs.org.length ; i ++ ){
+            if( vs.org[i] == fun ){
+              fn = vs.fn[i];
+              vs.org.splice( i , 1 ) ;
+              i --  ;
+              vs.fn.splice( i , 1 );
+            }
+          } 
+        }
+        me.dom.detachEvent( "on" + e , fn );
+      }
       return this;
     },
 
