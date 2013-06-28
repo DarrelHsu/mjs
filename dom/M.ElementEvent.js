@@ -22,7 +22,7 @@
       throw "Dom Error";
     }
     if( !dom.addEventListener ){
-      me.EventHash = {};
+      this.EventHash = {};
     }
   }
   M.ElementEvent = M.extend( M.Object , {
