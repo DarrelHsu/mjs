@@ -81,7 +81,8 @@
     }
     //如果传进来的已经是一个DOM元素则不需要再去选择
     //限定在构造中传入的数组一定是选中的DOM元素
-    if( selector instanceof HTMLElement || selector instanceof Array ){
+    // IE8不支持 HTMLElement  构造所以不能用instanceof HTMLElement来判断是否为html中的一个节点
+    if( ( selector.nodeType && ( selector.nodeType == 1 || selector.nodeType == 9 ) ) || selector instanceof Array ){
       this.setel( selector );
     }
 

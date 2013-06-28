@@ -98,6 +98,10 @@
  * 1.0.13.626
  * Array.each调整参数第一个为元素
  * 修复M.getEl不能选择window的问题
+ * EL增加height和scroll的操作
+ * 修复了几个BUG
+ * 1.0.13.628
+ * 修复选择器中在ie8对dom节点的判断
  */
 (function(){
-var VERSION =  '1.0.13.603'   ;
+var VERSION =  '1.0.13.628'   ;
