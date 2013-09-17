@@ -401,7 +401,13 @@
               evts.fire( evtname , evt );
             });
           }
-          evts.on(evtname , function( e ){ fun.call( item , e) } );
+          evts.on(evtname , function( e ){ 
+            ret = fun.call( item , e)
+            if( ret === false ){
+               e.preventDefault();
+               e.stopPropagation();
+            }
+          } );
         }
       });
       return this;
