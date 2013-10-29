@@ -1,5 +1,24 @@
 ( function() {
-
+    M.applyIfNot = function( dest, data , setting ){
+      if( setting === undefined ){
+        for( key in data ){
+          if( !( key in dest ) ){
+            dest[ key ] = data[key]
+          }
+        }
+      }else{
+        for( var i =0 , item ; item = setting[i++];){
+          if( ! ( item in dest ) ){
+            dest[ item ] = data[ item ]
+          }
+        }
+      }
+    }
+    
+    M.isEmptyObject = function( obj ){
+      for( var key in obj );
+      return key === undefined 
+    }
     var dateFormat = function() {
       var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g, timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g, timezoneClip = /[^-+\dA-Z]/g, pad = function(val, len) {
         val = String(val);

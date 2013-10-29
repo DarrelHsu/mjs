@@ -190,7 +190,7 @@ M.Net.ajax = function(){
      */
     request:function(o){
       var me = this
-      M.applyIfNot( o , me , ["request","defaultHeaders"])
+      M.applyIfNot( o , me , ["url","method","dataType","asynchronous","success","failure","timeout"])
       if(!o.data){
         if(o.xml || o.params){
           var hds = me.headers ||{}

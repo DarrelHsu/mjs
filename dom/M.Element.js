@@ -101,7 +101,7 @@
         var tag = rsingleTag.math( selector ) ;
         //如果是由纯标簦构成则生成
         if( rsingleTag ){
-          this.setel( [ document.createElement[ tag[1] ] ] );
+          this.setel( [ document.createElement( tag[1] ) ] );
         }else{
           this.setel( document.createElement("div").childNodes );
         }
