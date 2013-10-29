@@ -198,6 +198,10 @@
         }
       });*/
     },
+    submit : function( fun ){
+      this.addListener("click", fun );
+      return this;
+    },
     click:function( fun ){
       this.addListener("click", fun );
       return this;
@@ -605,20 +609,28 @@
       }
     },
 
-    parent:function(){
+    parent:function( selector ){
       var node = this[0].parentNode ;
-      if( node.nodeType != 1 ){ 
-        return new M.Element( node ) 
+      if( selector === undefined ){
+          if( node.nodeType == 1 || node.nodeType == 9 ){
+              return M$( node );
+          }
       }else{
-        if( node.parentNode && 
-            ( node = node.parentNode )  && 
-            node.nodeType != 1 
-          ){
-          return new M.Element( node );
-        }else{
-          return null;
-        } 
-      }; 
+          do{
+              if( dom.webkitMatchesSelector( selector ) ){
+                  return M$( node );
+              }
+          }while( node = node.parentNode ) ;
+      }
+    },
+
+    parents:function( sel ){
+      var dom = this[0].parentNode ;
+      while( dom.nodeType != 1 && dom != document ){
+        if( dom.webkitMatchesSelector( sel ) ){
+          return new M.Element( dom );
+        }
+      }
     },
    
     next:function( tag ){
@@ -630,6 +642,7 @@
         }
       }
     },    
+
     get:function( index ){
       if( typeof index == 'number' ){
         return index < this.length ? this[index] : null ; 
@@ -646,12 +659,13 @@
     
     insertAfter:function( el ){
       if( !( el instanceof M.Element) ){
-        el = M$( el )[0];
+        el = M$( el ) ;
       }
+      el = el[0] ;
       var node ,
           parentDom = el.parentNode ;
       if( node = el.nextSibling ){
-        parentDom.insertBefore( this[0] , el );
+        parentDom.insertBefore(  this[0] , node );
       }else{
         parentDom.appendChild( this[0] );
       }
@@ -714,14 +728,6 @@
       return this[0].contains( el );
     },
 
-    parents:function( sel ){
-      var dom = this[0].parentNode ;
-      while( dom.nodeType != 1 && dom != document ){
-        if( dom.webkitMatchesSelector( sel ) ){
-          return new M.Element( dom );
-        }
-      }
-    },
 
     remove:function(){
       var me = this ;

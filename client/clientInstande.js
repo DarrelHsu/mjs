@@ -32,7 +32,6 @@
       }
       if( !me.modelList[ id ] ){
         me.on( id  , function( ){
-
           //M.clientInstance.fire( ID , 'open' , 'error' )
           var args = Array.prototype.slice.call( arguments )
           //id = args.shift()

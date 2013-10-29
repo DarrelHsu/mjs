@@ -102,6 +102,9 @@
  * 修复了几个BUG
  * 1.0.13.628
  * 修复选择器中在ie8对dom节点的判断
+ * 1.0.13.1029
+ * 修复insertAfter问题
+ * 增加submit快速监听方法
  */
 (function(){
-var VERSION =  '1.0.13.628'   ;
+var VERSION =  '1.0.13.1029'   ;
